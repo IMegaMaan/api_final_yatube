@@ -1,12 +1,12 @@
-import django_filters
+from django_filters import rest_framework as filters
 
-from .models import Follow
+from .models import Post
 
 
-class FollowFilter(django_filters.FilterSet):
-    search = django_filters.CharFilter(
-        lookup_expr='iexact', field_name='user__username')
+class PostFilter(filters.FilterSet):
+    search = filters.NumberFilter(
+        lookup_expr='exact', field_name='group')
 
     class Meta:
-        model = Follow
-        fields = ['user']
+        model = Post
+        fields = ['group']

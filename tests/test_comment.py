@@ -22,6 +22,8 @@ class TestCommentAPI:
             'с токеном авторизации возвращаетсся статус 200'
         )
         test_data = response.json()
+        print(test_data)
+        print(Comment.objects.filter(post=post).all())
         assert type(test_data) == list, (
             'Проверьте, что при GET запросе на `/api/v1/posts/{post.id}/comments/` возвращается список'
         )
