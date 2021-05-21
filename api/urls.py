@@ -14,9 +14,9 @@ v1_router.register(r'^group', GroupsViewSet, basename='api_groups')
 v1_router.register(r'^follow', FollowsViewSet, basename='api_followers')
 
 urlpatterns = [
-    path('v1/', include(v1_router.urls)),
-    path('token/', jwt_views.TokenObtainPairView.as_view(),
+    path('v1/token/', jwt_views.TokenObtainPairView.as_view(),
          name='token_obtain_pair'),
-    path('token/refresh/', jwt_views.TokenRefreshView.as_view(),
+    path('v1/token/refresh/', jwt_views.TokenRefreshView.as_view(),
          name='token_refresh'),
+    path('v1/', include(v1_router.urls)),
 ]

@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, permissions, mixins, filters
+from rest_framework import viewsets, permissions, mixins
+from rest_framework.filters import SearchFilter
 
 from .models import Post, Group
 from .permissions import IsOwnerOrReadOnly
@@ -20,8 +21,8 @@ class PostsViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
     queryset = Post.objects.all()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['group']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('group',)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -44,7 +45,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
 class FollowsViewSet(BaseCreateListMixin):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (SearchFilter,)
     search_fields = ('user__username', 'following__username')
 
     def get_queryset(self):
