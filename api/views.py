@@ -1,19 +1,27 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, mixins, filters
 
-from .filters import PostFilter
-from .models import Post, Group, Follow
+from .models import Post, Group
 from .permissions import IsOwnerOrReadOnly
 from .serializers import (CommentSerializer, PostSerializer, FollowSerializer,
-                          GroupSerializer)
+                          GroupSerializer, User)
+
+
+class BaseCreateListMixin(mixins.CreateModelMixin,
+                          mixins.ListModelMixin,
+                          viewsets.GenericViewSet):
+    """Basic mixin for GET and POST methods"""
+    pass
 
 
 class PostsViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
-    filterset_class = PostFilter
     queryset = Post.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['group']
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -33,19 +41,18 @@ class CommentsViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, post=post)
 
 
-class FollowsViewSet(mixins.CreateModelMixin,
-                     mixins.ListModelMixin,
-                     viewsets.GenericViewSet):
+class FollowsViewSet(BaseCreateListMixin):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    filter_backends = [filters.SearchFilter]
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('user__username', 'following__username')
 
     def get_queryset(self):
-        return Follow.objects.filter(following=self.request.user)
+        user = get_object_or_404(User, pk=self.request.user.pk)
+        return user.following
 
 
-class GroupsViewSet(viewsets.ModelViewSet):
+class GroupsViewSet(BaseCreateListMixin):
     serializer_class = GroupSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
